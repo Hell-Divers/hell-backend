@@ -22,7 +22,7 @@ public class UserService {
         return userRepository.save(User.builder()
                 .email(dto.getEmail())
                 .password(bCryptPasswordEncoder.encode(dto.getPassword()))
-                .nickname(dto.getNickname())
+//                .nickname(dto.getNickname())
                 .build()).getId();
     }
 
@@ -35,7 +35,7 @@ public class UserService {
         User user = User.builder()
                 .email(request.getEmail())
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
-                .nickname(request.getNickname())
+//                .nickname(request.getNickname())
                 .build();
 
         userRepository.save(user);
