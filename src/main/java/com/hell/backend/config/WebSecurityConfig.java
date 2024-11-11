@@ -1,6 +1,5 @@
 package com.hell.backend.config;
 
-import com.hell.backend.users.service.UserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,36 +18,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final UserDetailService userService;
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정
+                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/login", "/api/v1/signup","/api/v1/logout").permitAll()
+                        .requestMatchers("/api/v1/login", "/api/v1/signup", "/api/v1/logout").permitAll()
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 );
-
 
         return http.build();
     }
 
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); //프론트 포트 번호
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-        configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://34.47.79.228")); // 허용할 도메인
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 필요한 HTTP 메서드 허용
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type")); // 허용할 요청 헤더
+        configuration.setAllowCredentials(true); // 자격 증명 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
