@@ -31,14 +31,8 @@ public class AuthController {
     })
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignUpRequest request) {
-        try {
-            userService.registerUser(request); // 중복 검사 및 저장
-            return ResponseEntity.ok("User registered successfully!");
-        } catch (IllegalStateException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
-        }
+        userService.registerUser(request); // 중복 검사 및 저장
+        return ResponseEntity.ok("User registered successfully!");
     }
 
     @Operation(summary = "사용자 로그인", description = "사용자 로그인을 수행하고 JWT 토큰을 반환합니다.")
@@ -50,21 +44,14 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        // 필수 필드 검증
         if (request.getEmail() == null || request.getPassword() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("필수 필드가 누락되었습니다.");
         }
 
-        try {
-            String token = userService.login(request);
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-            return new ResponseEntity<>("Login successful", headers, HttpStatus.OK);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
-        }
+        String token = userService.login(request);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        return new ResponseEntity<>("Login successful", headers, HttpStatus.OK);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃 처리")
