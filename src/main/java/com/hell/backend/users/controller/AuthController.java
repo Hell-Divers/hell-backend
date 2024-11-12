@@ -31,8 +31,14 @@ public class AuthController {
     })
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignUpRequest request) {
-        userService.registerUser(request); // 중복 검사 및 저장
-        return ResponseEntity.ok("User registered successfully!");
+        try {
+            userService.registerUser(request);
+            return ResponseEntity.ok("User registered successfully!");
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
     }
 
     @Operation(summary = "사용자 로그인", description = "사용자 로그인을 수행하고 JWT 토큰을 반환합니다.")

@@ -5,44 +5,40 @@ import com.hell.backend.users.dto.LoginRequest;
 import com.hell.backend.users.dto.SignUpRequest;
 import com.hell.backend.users.entity.User;
 import com.hell.backend.users.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
+import java.util.Optional;
+
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    // 회원가입
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
+
     public void registerUser(SignUpRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalStateException("Email already in use");
+            throw new IllegalStateException("이미 존재하는 이메일입니다.");
         }
-
-        // nickname이 null일 경우 기본값 설정
-        String nickname = request.getNickname() != null ? request.getNickname() : "DefaultNickname";
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(bCryptPasswordEncoder.encode(request.getPassword()))
-                .nickname(nickname)
-                .build();
-
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setNickname(request.getNickname());
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // 비밀번호 암호화
         userRepository.save(user);
     }
 
-    // 로그인 로직
     public String login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
-
-        if (!bCryptPasswordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid email or password");
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+        if (optionalUser.isEmpty() || !passwordEncoder.matches(request.getPassword(), optionalUser.get().getPassword())) {
+            throw new IllegalArgumentException("잘못된 이메일 또는 비밀번호");
         }
-        return jwtTokenProvider.generateToken(user.getEmail());
+        return jwtTokenProvider.generateToken(optionalUser.get().getEmail());
     }
 }
