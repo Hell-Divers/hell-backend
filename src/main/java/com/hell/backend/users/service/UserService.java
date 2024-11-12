@@ -18,18 +18,6 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
     // 회원가입
-<<<<<<< HEAD
-=======
-    public Long save(SignUpRequest dto) {
-        return userRepository.save(User.builder()
-                .email(dto.getEmail())
-                .password(bCryptPasswordEncoder.encode(dto.getPassword()))
-//                .nickname(dto.getNickname())
-                .build()).getId();
-    }
-
-    // 중복 이메일일 경우 예외 처리
->>>>>>> 5ffb5f7 (fix: remove nickname field)
     public void registerUser(SignUpRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalStateException("Email already in use");
@@ -41,11 +29,7 @@ public class UserService {
         User user = User.builder()
                 .email(request.getEmail())
                 .password(bCryptPasswordEncoder.encode(request.getPassword()))
-<<<<<<< HEAD
                 .nickname(nickname)
-=======
-//                .nickname(request.getNickname())
->>>>>>> 5ffb5f7 (fix: remove nickname field)
                 .build();
 
         userRepository.save(user);

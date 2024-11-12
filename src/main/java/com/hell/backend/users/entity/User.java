@@ -33,8 +33,8 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-//    @Column(name = "nickname", nullable = false, length = 100)
-//    private String nickname;
+    @Column(name = "nickname", nullable = false, length = 100)
+    private String nickname;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -53,9 +53,10 @@ public class User implements UserDetails {
     }
 
     @Builder
-    public User(String email, String password) {
+    public User(String email, String password, String nickname) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
     }
 
     @Override
