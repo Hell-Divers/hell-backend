@@ -1,5 +1,6 @@
 package com.hell.backend.config;
 
+import com.hell.backend.security.CustomAccessDeniedHandler;
 import com.hell.backend.security.CustomAuthenticationEntryPoint;
 import com.hell.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,8 +41,11 @@ public class WebSecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class)
-                .exceptionHandling(handler -> handler.authenticationEntryPoint(customAuthenticationEntryPoint));
+                .exceptionHandling(handler -> handler
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
 
         return http.build();
     }
@@ -53,7 +58,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*")); // Allow all origins (recommended for dev only)
+        configuration.setAllowedOriginPatterns(List.of("*")); // 개발 환경에서만 모든 오리진 허용 권장
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));
