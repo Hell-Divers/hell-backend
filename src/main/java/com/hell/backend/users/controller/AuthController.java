@@ -1,6 +1,7 @@
 package com.hell.backend.users.controller;
 
 import com.hell.backend.users.dto.LoginRequest;
+import com.hell.backend.users.dto.LoginResponse;
 import com.hell.backend.users.dto.SignUpRequest;
 import com.hell.backend.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,7 @@ public class AuthController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "회원 가입 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "409", description = "중복된 이메일"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/signup")
@@ -44,11 +46,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         String token = userService.login(request);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
-        return new ResponseEntity<>("Login successful", headers, HttpStatus.OK);
+        return new ResponseEntity<>(new LoginResponse(token), headers, HttpStatus.OK);
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃 처리")

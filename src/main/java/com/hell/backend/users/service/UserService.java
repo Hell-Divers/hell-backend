@@ -5,6 +5,7 @@ import com.hell.backend.users.dto.LoginRequest;
 import com.hell.backend.users.dto.SignUpRequest;
 import com.hell.backend.users.entity.User;
 import com.hell.backend.users.exception.DuplicateEmailException;
+import com.hell.backend.users.exception.InvalidCredentialsException;
 import com.hell.backend.users.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class UserService {
     public String login(LoginRequest request) {
         Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
         if (optionalUser.isEmpty() || !passwordEncoder.matches(request.getPassword(), optionalUser.get().getPassword())) {
-            throw new IllegalArgumentException("잘못된 이메일 또는 비밀번호");
+            throw new InvalidCredentialsException("잘못된 이메일 또는 비밀번호");
         }
         return jwtTokenProvider.generateToken(optionalUser.get().getEmail());
     }

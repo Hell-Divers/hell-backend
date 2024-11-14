@@ -1,6 +1,7 @@
 package com.hell.backend.exception;
 
 import com.hell.backend.users.exception.DuplicateEmailException;
+import com.hell.backend.users.exception.InvalidCredentialsException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,16 @@ public class GlobalExceptionHandler {
         response.put("error", "Duplicate Email");
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409 Conflict
+    }
+
+    // 잘못된 자격 증명 예외 처리 (InvalidCredentialsException 사용)
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        logger.error("InvalidCredentialsException 발생: {}", ex.getMessage());
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Unauthorized");
+        response.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401 Unauthorized
     }
 
     // 데이터 무결성 위반 예외 처리 (예: 중복 키 등)
