@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -25,20 +26,14 @@ public class AuthController {
 
     @Operation(summary = "회원 가입", description = "새로운 사용자를 등록하는 API")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "회원 가입 성공"),
+            @ApiResponse(responseCode = "201", description = "회원 가입 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignUpRequest request) {
-        try {
-            userService.registerUser(request);
-            return ResponseEntity.ok("User registered successfully!");
-        } catch (IllegalStateException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
-        }
+    public ResponseEntity<String> signup(@Valid @RequestBody SignUpRequest request) {
+        userService.registerUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
     }
 
     @Operation(summary = "사용자 로그인", description = "사용자 로그인을 수행하고 JWT 토큰을 반환합니다.")
@@ -49,11 +44,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        if (request.getEmail() == null || request.getPassword() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("필수 필드가 누락되었습니다.");
-        }
-
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         String token = userService.login(request);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
@@ -63,7 +54,6 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = "로그아웃 처리")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/logout")

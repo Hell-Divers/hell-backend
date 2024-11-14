@@ -18,11 +18,9 @@ public class ExceptionHandlingFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             filterChain.doFilter(request, response);
-        } catch ( DataIntegrityViolationException ex) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
-            response.getWriter().write("이미 존재하는 이메일입니다.");
         } catch (Exception ex) {
-            // 다른 예외는 그대로 던집니다.
+            // 예외를 컨트롤러로 전파
+            request.setAttribute("filter.error", ex);
             throw ex;
         }
     }

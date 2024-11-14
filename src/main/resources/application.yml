@@ -17,3 +17,10 @@ spring:
 jwt:
   secret: vB4Z$7k*Wq8v^3x&n@Y9Lp#cDf6z!KqRc%3mPrX^b9s?N7jX2$Vg6LqQk2^Mv$w
   expiration: 3600000  # 토큰 유효 기간 (밀리초 단위), 여기서는 1시간
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: DEBUG
+    com.hell.backend: DEBUG

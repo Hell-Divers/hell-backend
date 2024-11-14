@@ -4,17 +4,16 @@ import com.hell.backend.security.JwtTokenProvider;
 import com.hell.backend.users.dto.LoginRequest;
 import com.hell.backend.users.dto.SignUpRequest;
 import com.hell.backend.users.entity.User;
+import com.hell.backend.users.exception.DuplicateEmailException;
 import com.hell.backend.users.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static com.mysql.cj.conf.PropertyKey.logger;
-@Slf4j
 @Service
 public class UserService {
 
@@ -29,22 +28,23 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    //request log로 출력해보기
+    @Transactional(rollbackFor = Exception.class)
     public void registerUser(SignUpRequest request) {
         logger.info("Registering user with email: {}, nickname: {}", request.getEmail(), request.getNickname());
 
         if (userRepository.existsByEmail(request.getEmail())) {
             logger.warn("Email already exists: {}", request.getEmail());
-            throw new IllegalStateException("이미 존재하는 이메일입니다.");
+            throw new DuplicateEmailException("이미 존재하는 이메일입니다.");
         }
-        User user = new User();
-        user.setEmail(request.getEmail());
 
-        user.setNickname(request.getNickname());
-        user.setPassword(passwordEncoder.encode(request.getPassword())); // 비밀번호 암호화
+        User user = User.builder()
+                .email(request.getEmail())
+                .nickname(request.getNickname())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .build();
+
         userRepository.save(user);
-
-        logger.info("email:{}",user.getEmail());
+        logger.info("User registered with email: {}", user.getEmail());
     }
 
     public String login(LoginRequest request) {

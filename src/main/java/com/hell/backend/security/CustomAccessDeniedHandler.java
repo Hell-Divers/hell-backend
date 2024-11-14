@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+//403 에러 뜨면 AccessDeniedException 처리
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
