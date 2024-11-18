@@ -1,8 +1,8 @@
-package com.hell.backend.config;
+package com.hell.backend.common.config;
 
-import com.hell.backend.security.CustomAccessDeniedHandler;
-import com.hell.backend.security.CustomAuthenticationEntryPoint;
-import com.hell.backend.security.JwtAuthenticationFilter;
+import com.hell.backend.common.security.CustomAccessDeniedHandler;
+import com.hell.backend.common.security.CustomAuthenticationEntryPoint;
+import com.hell.backend.common.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
