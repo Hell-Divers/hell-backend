@@ -1,6 +1,6 @@
 package com.hell.backend.users.service;
 
-import com.hell.backend.security.JwtTokenProvider;
+import com.hell.backend.common.security.JwtTokenProvider;
 import com.hell.backend.users.dto.LoginRequest;
 import com.hell.backend.users.dto.SignUpRequest;
 import com.hell.backend.users.entity.User;

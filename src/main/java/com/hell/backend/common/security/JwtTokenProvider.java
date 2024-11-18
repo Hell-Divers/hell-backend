@@ -1,4 +1,4 @@
-package com.hell.backend.security;
+package com.hell.backend.common.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

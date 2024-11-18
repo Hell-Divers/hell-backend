@@ -1,4 +1,4 @@
-package com.hell.backend.exception;
+package com.hell.backend.common.exception;
 
 import com.hell.backend.users.exception.DuplicateEmailException;
 import com.hell.backend.users.exception.InvalidCredentialsException;
