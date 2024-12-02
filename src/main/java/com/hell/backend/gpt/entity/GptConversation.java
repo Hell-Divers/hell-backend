@@ -1,6 +1,5 @@
 package com.hell.backend.gpt.entity;
 
-
 import com.hell.backend.users.entity.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

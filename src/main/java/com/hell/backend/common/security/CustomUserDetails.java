@@ -10,22 +10,22 @@ import java.util.Collection;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    private final User user; // User 엔티티 객체를 포함
+    private final User user;
 
     public CustomUserDetails(User user) {
         this.user = user;
     }
 
-    // User 엔티티의 ID를 가져오는 메서드
+    // 추가 메서드: 사용자 ID 가져오기
     public Long getId() {
         return user.getId();
     }
 
-    // 아래는 UserDetails 인터페이스의 메서드 구현
+    // UserDetails 인터페이스 메서드 구현
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 권한 설정 (필요에 따라 수정)
-        return null;
+        return null; // 또는 적절한 권한 리스트 반환
     }
 
     @Override
