@@ -1,6 +1,7 @@
 package com.hell.backend.gpt.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hell.backend.expense.service.ExpenseService;
 import com.hell.backend.gpt.dto.GptRequest;
@@ -131,7 +132,6 @@ public class GptService {
         );
 
 
-
         // 사용자 메시지와 시스템 메시지 결합
         List<Map<String, String>> messages = new java.util.ArrayList<>();
         messages.add(systemMessage);
@@ -160,23 +160,24 @@ public class GptService {
 
     private GptResponse parseGptResponse(String gptReply) {
         try {
-            String jsonPart = extractJsonFromResponse(gptReply);
-            if (!jsonPart.startsWith("{") || !jsonPart.endsWith("}")) {
-                throw new GptResponseParseException("응답이 JSON 형식이 아닙니다", new Throwable(gptReply));
+            // ObjectMapper를 사용하여 응답을 JsonNode로 변환
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(gptReply);
+
+            // "role"과 "content" 노드 확인
+            JsonNode roleNode = rootNode.path("role");
+            JsonNode contentNode = rootNode.path("content");
+
+            // 필수 필드 검증
+            if (roleNode.isMissingNode() || contentNode.isMissingNode()) {
+                throw new GptResponseParseException("응답에서 'role' 또는 'content' 필드가 누락되었습니다.");
             }
-            return objectMapper.readValue(jsonPart, GptResponse.class);
+
+            // GptResponse 객체로 변환
+            return mapper.treeToValue(rootNode, GptResponse.class);
         } catch (JsonProcessingException e) {
+            // JSON 파싱 오류 처리
             throw new GptResponseParseException("GPT 응답을 파싱하는 중 오류가 발생했습니다.", e);
         }
-    }
-
-    private String extractJsonFromResponse(String response) {
-        // 응답에서 '{'로 시작하고 '}'로 끝나는 부분 추출
-        int startIndex = response.indexOf('{');
-        int endIndex = response.lastIndexOf('}') + 1;
-        if (startIndex >= 0 && endIndex > startIndex) {
-            return response.substring(startIndex, endIndex);
-        }
-        return response;
     }
 }
