@@ -19,10 +19,12 @@ public class ExpenseResponse {
 
     public ExpenseResponse(Expense expense) {
         this.id = expense.getId();
+        //category로 수정
         this.categoryName = expense.getCategory().getName();
         this.amount = expense.getAmount();
         this.location = expense.getLocation();
         this.dateTime = expense.getDateTime();
+        //memo 생략, balance 잔고 추가
         this.memo = expense.getMemo();
     }
 }
