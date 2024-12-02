@@ -16,37 +16,37 @@ public class GptResponse {
     @Schema(description = "GPT의 응답 내용")
     private Content content;
 
-    @Schema(description = "응답 상태", example = "accept")
-    private String state;
-
     @Getter
     @Setter
     public static class Content {
 
-        @Schema(description = "메시지", example = "초코바는 맛있죠! CU에서 드셨군요.")
+        @Schema(description = "응답 메시지")
         private String message;
 
-        @Schema(description = "추가 데이터")
-        private List<Data> values;
+        @Schema(description = "추가 데이터 리스트")
+        private List<Value> values;
+
+        @Schema(description = "응답 상태", example = "accept")
+        private String state;
     }
 
     @Getter
     @Setter
-    public static class Data {
+    public static class Value {
 
-        @Schema(description = "사용 일시", example = "2024-11-08T15:00:00+09:00")
-        private String datetime;
-
-        @Schema(description = "거래 유형", example = "expense")
-        private String type;
-
-        @Schema(description = "금액", example = "50000")
+        @Schema(description = "금액", example = "3000")
         private Integer amount;
+
+        @Schema(description = "일시", example = "2024-11-08T15:00:00+09:00")
+        private String datetime;
 
         @Schema(description = "카테고리", example = "snack")
         private String category;
 
-        @Schema(description = "사용처", example = "CU 강남대점")
+        @Schema(description = "장소", example = "CU 강남대점")
         private String place;
+
+        @Schema(description = "거래 유형", example = "expense")
+        private String type;
     }
 }

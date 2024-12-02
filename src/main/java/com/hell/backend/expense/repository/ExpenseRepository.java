@@ -10,10 +10,10 @@ import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
-    @Query("SELECT e FROM Expense e WHERE e.user.id = :userId AND MONTH(e.dateTime) = :month AND YEAR(e.dateTime) = :year AND e.deletedAt IS NULL")
+    @Query("SELECT e FROM Expense e WHERE e.user.id = :userId AND MONTH(e.transactionDateTime) = :month AND YEAR(e.transactionDateTime) = :year AND e.deletedAt IS NULL")
     List<Expense> findByUserIdAndMonthAndYear(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
 
-    @Query("SELECT e FROM Expense e WHERE e.user.id = :userId AND DATE(e.dateTime) = :date AND e.deletedAt IS NULL")
+    @Query("SELECT e FROM Expense e WHERE e.user.id = :userId AND DATE(e.transactionDateTime) = :date AND e.deletedAt IS NULL")
     List<Expense> findByUserIdAndDateAndDeletedAtIsNull(@Param("userId") Long userId, @Param("date") LocalDate date);
 
     List<Expense> findByUserIdAndDeletedAtIsNull(Long userId);

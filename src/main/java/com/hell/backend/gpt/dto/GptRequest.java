@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 public class GptRequest {
 
-    @Schema(description = "메시지 배열", example = "[{ \"role\": \"user\", \"content\": \"메시지 내용\" }]")
+    @Schema(description = "메시지 배열")
     private List<Message> messages;
 
     @Getter
@@ -20,10 +20,10 @@ public class GptRequest {
         @Schema(description = "메시지 역할", example = "user")
         private String role;
 
-        @Schema(description = "메시지 내용", example = "그저께 CU에서 초코바 먹었어 3000원")
+        @Schema(description = "메시지 내용")
         private String content;
 
-        @Schema(description = "메시지 일시", example = "2024-11-10 15:18:12")
+        @Schema(description = "메시지 일시", example = "2024-11-10T15:18:12+09:00")
         private String datetime;
     }
 }

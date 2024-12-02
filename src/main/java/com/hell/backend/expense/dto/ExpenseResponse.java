@@ -14,7 +14,7 @@ public class ExpenseResponse {
     private String categoryName;
     private BigDecimal amount;
     private String location;
-    private LocalDateTime dateTime; // 필드명과 타입 수정
+    private LocalDateTime transactionDateTime; // 필드명 수정
     private String memo;
 
     public ExpenseResponse(Expense expense) {
@@ -22,7 +22,6 @@ public class ExpenseResponse {
         this.categoryName = expense.getCategory().getName();
         this.amount = expense.getAmount();
         this.location = expense.getLocation();
-        this.dateTime = expense.getDateTime();
-        this.memo = expense.getMemo();
+        this.transactionDateTime = expense.getTransactionDateTime(); // 수정된 부분
     }
 }
