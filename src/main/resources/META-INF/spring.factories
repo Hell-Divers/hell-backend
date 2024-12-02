@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.hell.backend.common.config.DotenvEnvironmentPostProcessor
