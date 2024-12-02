@@ -1,13 +1,12 @@
 package com.hell.backend.expense.entity;
 
 import com.hell.backend.users.entity.User;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,7 +34,7 @@ public class Expense {
 
     private String location;
 
-    private LocalDate date;
+    private LocalDateTime dateTime; // 필드명과 타입 수정
 
     @Column(name = "gpt_feedback", columnDefinition = "TEXT")
     private String gptFeedback;
