@@ -20,28 +20,28 @@ public class Expense {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // User와의 관계 매핑
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Category와의 관계 매핑
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category", nullable = false)
     private Category category;
 
+    @Column(nullable = false)
     private BigDecimal amount;
 
     private String location;
 
-    private LocalDateTime dateTime; // 필드명과 타입 수정
+    @Column(name = "date_time", nullable = false)
+    private LocalDateTime dateTime;
 
     @Column(name = "gpt_feedback", columnDefinition = "TEXT")
     private String gptFeedback;
 
-    private String memo;
+    private String balance;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
