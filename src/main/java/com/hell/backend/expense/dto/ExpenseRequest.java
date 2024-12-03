@@ -12,6 +12,5 @@ public class ExpenseRequest {
     private Long categoryId;
     private BigDecimal amount;
     private String location;
-    private LocalDateTime dateTime; // 필드명과 타입 수정
-    private String memo;
+    private LocalDateTime dateTime;
 }

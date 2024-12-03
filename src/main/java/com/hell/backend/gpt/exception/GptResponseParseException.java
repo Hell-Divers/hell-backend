@@ -10,4 +10,7 @@ public class GptResponseParseException extends CustomException {
     public GptResponseParseException(String message, String details){
         super(message + ": " + details);
     }
+    public GptResponseParseException(String message){
+        super(message + ": " );
+    }
 }

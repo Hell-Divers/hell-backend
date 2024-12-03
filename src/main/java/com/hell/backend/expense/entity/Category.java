@@ -1,10 +1,9 @@
 package com.hell.backend.expense.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import jakarta.persistence.*;
 
 @Entity
 @Table(name = "categories")
@@ -17,8 +16,9 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String name;
 
-    // 수입/지출 구분: "income" 또는 "expense"
-    private String type;
+    @Column(nullable = false)
+    private String type; // "income" or "expense"
 }
