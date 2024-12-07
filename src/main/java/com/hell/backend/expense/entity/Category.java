@@ -20,5 +20,10 @@ public class Category {
     private String name;
 
     @Column(nullable = false)
-    private String type; // "income" or "expense"
+    private String type;
+
+    public Category(String name, String type) {
+        this.name = name;
+        this.type = type;
+    }
 }

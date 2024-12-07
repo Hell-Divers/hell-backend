@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hell.backend.expense.service.ExpenseService;
+import com.hell.backend.expense.service.BalanceService;
 import com.hell.backend.gpt.dto.GptRequest;
 import com.hell.backend.gpt.dto.GptRequest.Message;
 import com.hell.backend.gpt.dto.GptResponse;
@@ -13,11 +14,15 @@ import com.hell.backend.gpt.exception.GptResponseParseException;
 import com.hell.backend.gpt.repository.GptConversationRepository;
 import com.hell.backend.users.entity.User;
 import com.hell.backend.users.repository.UserRepository;
+import com.hell.backend.chat.exception.ChatProcessingException;
 import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,49 +34,43 @@ public class GptService {
     private final GptConversationRepository gptConversationRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ExpenseService expenseService; // ExpenseService 주입
+    private final ExpenseService expenseService;
+    private final BalanceService balanceService;
 
-    public GptResponse processChatGptRequest(GptRequest request, Long userId) {
-
-        // OpenAI API 호출을 위한 메시지 생성
-        List<Map<String, String>> messages = createMessages(request);
-
-        // GPT로부터 응답 받기
-        String gptReply;
+    public GptResponse processChatGptRequest(GptRequest request, Long userId, BigDecimal balance) {
         try {
-            gptReply = openAIClient.getChatResponse(messages);
-            // GPT 응답을 로그로 출력
-            System.out.println("GPT Reply: " + gptReply);
+            // 시스템 프롬프트 설정
+            String systemPrompt = String.format(
+                GptPrompt.CHAT_PROMPT,
+                balance.toString()
+            );
+
+            // GPT 메시지 구성
+            List<Map<String, String>> messages = new ArrayList<>();
+            messages.add(Map.of("role", "system", "content", systemPrompt));
+            
+            // 사용자 메시지 추가
+            for (GptRequest.Message msg : request.getMessages()) {
+                Map<String, Object> content = new HashMap<>();
+                content.put("message", msg.getContent());
+                content.put("datetime", msg.getDatetime());
+                content.put("userBalance", balance.toString());
+                
+                messages.add(Map.of(
+                    "role", msg.getRole(),
+                    "content", objectMapper.writeValueAsString(content)
+                ));
+            }
+
+            // GPT API 호출
+            String gptResponse = openAIClient.getChatResponse(messages);
+            
+            // 응답 파싱 및 반환
+            return parseGptResponse(gptResponse);
+            
         } catch (Exception e) {
-            // 기타 예외 처리
-            throw new RuntimeException("GPT 응답을 받는 중 오류가 발생했습니다.", e);
+            throw new ChatProcessingException("GPT 처리 중 오류 발생: " + e.getMessage());
         }
-
-        // GPT 응답을 파싱하여 GptResponse 객체로 변환
-        GptResponse response;
-        try {
-            response = parseGptResponse(gptReply);
-        } catch (GptResponseParseException e) {
-            // 파싱 예외 처리
-            response = new GptResponse();
-            response.setRole("assistant");
-            GptResponse.Content content = new GptResponse.Content();
-            content.setMessage("죄송합니다, 응답을 처리하는 중 오류가 발생했습니다. 다시 시도해 주세요.");
-            response.setContent(content);
-            response.setState("error");
-            // 로그를 남기거나 추가 처리 가능
-            System.err.println("GPT 응답 파싱 오류: " + e.getMessage());
-        }
-
-        // 대화 내역 저장
-        saveConversation(request, gptReply, userId);
-
-        // 필요한 경우 데이터 저장 로직 추가
-        if ("accept".equals(response.getState()) && response.getContent().getValues() != null) {
-            expenseService.addExpenseFromGptData(response, userId);
-        }
-
-        return response;
     }
 
     private List<Map<String, String>> createMessages(GptRequest request) {
