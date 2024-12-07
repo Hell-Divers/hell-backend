@@ -13,21 +13,26 @@ import com.hell.backend.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final BalanceService balanceService;
 
+    @Transactional
     public ExpenseResponse addExpense(ExpenseRequest request, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -42,36 +47,39 @@ public class ExpenseService {
         expense.setLocation(request.getLocation());
         expense.setDateTime(request.getDateTime());
 
+        balanceService.updateBalance(userId, request.getAmount(), category.getType());
+
         expenseRepository.save(expense);
 
         return new ExpenseResponse(expense);
     }
 
+    @Transactional
     public void addExpenseFromGptData(GptResponse response, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (response.getContent().getValues() == null || response.getContent().getValues().isEmpty()) {
+        if (response.getExpenses() == null || response.getExpenses().isEmpty()) {
             throw new IllegalArgumentException("GPT response contains no valid data.");
         }
 
-        for (GptResponse.Data data : response.getContent().getValues()) {
-            Category category = categoryRepository.findByName(data.getCategory())
+        for (GptResponse.ExpenseData expense : response.getExpenses()) {
+            Category category = categoryRepository.findByName(expense.getCategory())
                     .orElseGet(() -> {
                         Category newCategory = new Category();
-                        newCategory.setName(data.getCategory());
-                        newCategory.setType(data.getType());
+                        newCategory.setName(expense.getCategory());
+                        newCategory.setType(expense.getType());
                         return categoryRepository.save(newCategory);
                     });
 
-            Expense expense = new Expense();
-            expense.setUser(user);
-            expense.setCategory(category);
-            expense.setAmount(BigDecimal.valueOf(data.getAmount()));
-            expense.setLocation(data.getPlace());
-            expense.setDateTime(parseDateTime(data.getDatetime()));
+            Expense expenseEntity = new Expense();
+            expenseEntity.setUser(user);
+            expenseEntity.setCategory(category);
+            expenseEntity.setAmount(BigDecimal.valueOf(expense.getAmount()));
+            expenseEntity.setLocation(expense.getLocation());
+            expenseEntity.setDateTime(parseDateTime(expense.getDatetime()));
 
-            expenseRepository.save(expense);
+            expenseRepository.save(expenseEntity);
         }
     }
 
@@ -106,11 +114,9 @@ public class ExpenseService {
 
     public List<ExpenseResponse> getDailyExpenses(Long userId, LocalDate date) {
         List<Expense> expenses = expenseRepository.findByUserIdAndDateAndDeletedAtIsNull(userId, date);
-        List<ExpenseResponse> responseList = new ArrayList<>();
-        for (Expense expense : expenses) {
-            responseList.add(new ExpenseResponse(expense));
-        }
-        return responseList;
+        return expenses.stream()
+                .map(ExpenseResponse::new)
+                .collect(Collectors.toList());
     }
 
     public List<ExpenseResponse> getAllExpenses(Long userId) {

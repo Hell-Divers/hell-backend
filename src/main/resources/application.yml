@@ -8,11 +8,19 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
+    open-in-view: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        default_batch_fetch_size: 1000
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      platform: mysql
 
 jwt:
   secret: vB4Z$7k*Wq8v^3x&n@Y9Lp#cDf6z!KqRc%3mPrX^b9s?N7jX2$Vg6LqQk2^Mv$w
@@ -21,8 +29,8 @@ jwt:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
     org.springframework.web: DEBUG
     com.hell.backend: DEBUG
 
