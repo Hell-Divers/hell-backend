@@ -19,10 +19,13 @@ public class OpenAIClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${OPENAI_API_KEY}")
+    @Value("${openai.api.key}")
     private String apiKey;
 
     public String getChatResponse(List<Map<String, String>> messages) {
+        // API 키 로깅 (디버깅용, 실제 운영에서는 제거)
+        System.out.println("Using API Key: " + (apiKey != null ? "Key exists" : "Key is null"));
+        
         String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();

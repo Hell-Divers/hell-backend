@@ -5,7 +5,6 @@ import com.hell.backend.chat.entity.MessageRole;
 import com.hell.backend.chat.repository.ChatMessageRepository;
 import com.hell.backend.expense.service.BalanceService;
 import com.hell.backend.gpt.dto.GptRequest;
-import com.hell.backend.gpt.dto.GptResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
-    private final BalanceService balanceService;
     
     @Transactional
     public void saveChatMessage(GptRequest.Message message, Long userId, String state) {

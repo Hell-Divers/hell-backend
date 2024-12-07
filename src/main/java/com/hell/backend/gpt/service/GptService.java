@@ -63,25 +63,40 @@ public class GptService {
 
     private GptResponse parseGptResponse(String gptReply) {
         try {
-
-            if (!isJsonValid(gptReply)) {
-                throw new GptResponseParseException("GPT 응답이 JSON 형식이 아닙니다: " + gptReply);
+            JsonNode rootNode = objectMapper.readTree(gptReply);
+            JsonNode choicesNode = rootNode.path("choices");
+            
+            if (choicesNode.isArray() && choicesNode.size() > 0) {
+                JsonNode messageNode = choicesNode.get(0).path("message");
+                JsonNode contentNode = messageNode.path("content");
+                
+                // 디버깅 로그 추가
+                String contentStr = contentNode.asText();
+                System.out.println("Content to parse: " + contentStr);
+                
+                try {
+                    // 문자열을 JsonNode로 다시 파싱
+                    JsonNode contentJson = objectMapper.readTree(contentStr);
+                    
+                    // JsonNode를 GptResponse 객체로 변환
+                    GptResponse response = objectMapper.treeToValue(contentJson, GptResponse.class);
+                    
+                    // 디버깅 로그 추가
+                    System.out.println("Parsed response: " + objectMapper.writeValueAsString(response));
+                    
+                    return response;
+                } catch (Exception e) {
+                    System.err.println("Failed to parse content: " + e.getMessage());
+                    e.printStackTrace();
+                    throw new GptResponseParseException("Failed to parse GPT content: " + e.getMessage());
+                }
             }
-
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode rootNode = mapper.readTree(gptReply);
-
-            JsonNode roleNode = rootNode.path("role");
-            JsonNode contentNode = rootNode.path("content");
-
-            if (roleNode.isMissingNode() || contentNode.isMissingNode()) {
-                throw new GptResponseParseException("응답에서 'role' 또는 'content' 필드가 누락되었습니다.");
-            }
-
-            return mapper.treeToValue(rootNode, GptResponse.class);
+            
+            throw new GptResponseParseException("Invalid GPT response format");
         } catch (JsonProcessingException e) {
-            System.err.println("GPT 응답 파싱 오류: " + gptReply);
-            throw new GptResponseParseException("GPT 응답을 파싱하는 중 오류가 발생했습니다.", e);
+            System.err.println("Failed to parse GPT response: " + e.getMessage());
+            e.printStackTrace();
+            throw new GptResponseParseException("Failed to parse GPT response: " + e.getMessage());
         }
     }
 
