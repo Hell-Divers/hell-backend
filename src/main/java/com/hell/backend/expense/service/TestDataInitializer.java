@@ -6,7 +6,6 @@ import com.hell.backend.expense.repository.CategoryRepository;
 import com.hell.backend.expense.repository.ExpenseRepository;
 import com.hell.backend.users.entity.User;
 import com.hell.backend.users.repository.UserRepository;
-import com.hell.backend.expense.service.BalanceService;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -97,16 +96,6 @@ public class TestDataInitializer {
         private String amount;
         private String location;
         private String dateTime;
-    }
-
-    private Category getOrCreateCategory(String name, String type) {
-        return categoryRepository.findByName(name)
-                .orElseGet(() -> {
-                    Category category = new Category();
-                    category.setName(name);
-                    category.setType(type);
-                    return categoryRepository.save(category);
-                });
     }
 
     private void createExpense(User user, ExpenseData data) {

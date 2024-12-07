@@ -4,9 +4,7 @@ import com.hell.backend.common.security.CustomUserDetails;
 import com.hell.backend.gpt.dto.GptRequest;
 import com.hell.backend.gpt.dto.GptResponse;
 import com.hell.backend.gpt.service.GptService;
-import com.hell.backend.chat.service.ChatService;
 import com.hell.backend.expense.service.BalanceService;
-import com.hell.backend.chat.exception.ChatProcessingException;
 import com.hell.backend.common.dto.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +25,6 @@ import java.math.BigDecimal;
 public class ChatController {
 
     private final GptService gptService;
-    private final ChatService chatService;
     private final BalanceService balanceService;
 
     @Operation(summary = "채팅 메시지 전송", description = "사용자의 채팅 메시지를 처리하고 GPT의 응답을 반환합니다.")

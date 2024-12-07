@@ -1,23 +1,15 @@
 package com.hell.backend.gpt.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hell.backend.expense.service.ExpenseService;
-import com.hell.backend.expense.service.BalanceService;
 import com.hell.backend.gpt.dto.GptRequest;
-import com.hell.backend.gpt.dto.GptRequest.Message;
 import com.hell.backend.gpt.dto.GptResponse;
-import com.hell.backend.gpt.entity.GptConversation;
+import com.hell.backend.gpt.dto.GptPrompt;
 import com.hell.backend.gpt.exception.GptResponseParseException;
-import com.hell.backend.gpt.repository.GptConversationRepository;
-import com.hell.backend.users.entity.User;
-import com.hell.backend.users.repository.UserRepository;
 import com.hell.backend.chat.exception.ChatProcessingException;
 import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -31,11 +23,7 @@ import java.util.Map;
 public class GptService {
 
     private final OpenAIClient openAIClient;
-    private final GptConversationRepository gptConversationRepository;
-    private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ExpenseService expenseService;
-    private final BalanceService balanceService;
 
     public GptResponse processChatGptRequest(GptRequest request, Long userId, BigDecimal balance) {
         try {
@@ -71,43 +59,6 @@ public class GptService {
         } catch (Exception e) {
             throw new ChatProcessingException("GPT 처리 중 오류 발생: " + e.getMessage());
         }
-    }
-
-    private List<Map<String, String>> createMessages(GptRequest request) {
-        // 요청으로부터 사용자의 메시지 가져오기
-        List<Message> userMessages = request.getMessages();
-
-        // 시스템 메시지 생성
-        Map<String, String> systemMessage = Map.of(
-                "role", "system",
-                "content", GptPrompt.CHAT_PROMPT
-        );
-
-
-        // 사용자 메시지와 시스템 메시지 결합
-        List<Map<String, String>> messages = new java.util.ArrayList<>();
-        messages.add(systemMessage);
-
-        for (Message msg : userMessages) {
-            messages.add(Map.of(
-                    "role", msg.getRole(),
-                    "content", msg.getContent()
-            ));
-        }
-
-        return messages;
-    }
-
-    // 대화 내역을 데이터베이스에 저장
-    private void saveConversation(GptRequest request, String gptReply, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        GptConversation conversation = new GptConversation();
-        conversation.setUser(user);
-        conversation.setUserMessage(request.getMessages().toString());
-        conversation.setGptResponse(gptReply);
-        gptConversationRepository.save(conversation);
     }
 
     private GptResponse parseGptResponse(String gptReply) {
