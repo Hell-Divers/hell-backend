@@ -27,15 +27,17 @@ public class GptService {
 
     public GptResponse processChatGptRequest(GptRequest request, Long userId, BigDecimal balance) {
         try {
-            // 시스템 프롬프트 설정
-            String systemPrompt = String.format(
-                GptPrompt.CHAT_PROMPT,
-                balance.toString()
-            );
-
             // GPT 메시지 구성
             List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of("role", "system", "content", systemPrompt));
+            
+            // 최초 채팅인 경우에만 시스템 프롬프트 추가 (메시지가 1개일 때)
+            if (request.getMessages().size() == 1) {
+                String systemPrompt = String.format(
+                    GptPrompt.CHAT_PROMPT,
+                    balance.toString()
+                );
+                messages.add(Map.of("role", "system", "content", systemPrompt));
+            }
             
             // 사용자 메시지 추가
             for (GptRequest.Message msg : request.getMessages()) {

@@ -43,3 +43,6 @@ nbdist/
 
 ### VS Code ###
 .vscode/
+
+.env
+.application.yml

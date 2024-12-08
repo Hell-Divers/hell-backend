@@ -2,6 +2,7 @@ package com.hell.backend.gpt.service;
 
 import com.hell.backend.gpt.exception.OpenAIClientException;
 import com.hell.backend.gpt.exception.QuotaExceededException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class OpenAIClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${OPENAI_API_KEY}")
     private String apiKey;
@@ -38,45 +40,26 @@ public class OpenAIClient {
 
         try {
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                url, 
+                url,
                 HttpMethod.POST,
-                request, 
+                request,
                 new ParameterizedTypeReference<Map<String, Object>>() {}
             );
             Map<String, Object> responseBody = response.getBody();
-            // GPT 응답을 로그로 출력
+            // GPT 응답 로깅
             System.out.println("GPT Response Body: " + responseBody);
-            return parseResponse(responseBody);
+
+            // Return full response body as JSON string
+            return objectMapper.writeValueAsString(responseBody);
+
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                // 할당량 초과 예외 처리
                 throw new QuotaExceededException("OpenAI API quota exceeded.", e);
             } else {
-                // 기타 클라이언트 오류 처리
                 throw new OpenAIClientException("Error occurred while calling OpenAI API.", e);
             }
         } catch (Exception e) {
-            // 기타 예외 처리
             throw new OpenAIClientException("Unexpected error occurred while calling OpenAI API.", e);
         }
-    }
-
-    private String parseResponse(Map<String, Object> responseBody) {
-        if (responseBody != null) {
-            @SuppressWarnings("unchecked")
-            List<Map<String,Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
-            if (choices != null && !choices.isEmpty()) {
-                Map<String, Object> choice = choices.get(0);
-                @SuppressWarnings("unchecked")
-                Map<String, Object> message = (Map<String, Object>) choice.get("message");
-                if (message != null) {
-                    String content = (String) message.get("content");
-                    // GPT 응답을 로그로 출력
-                    System.out.println("GPT Response Content: " + content);
-                    return content;
-                }
-            }
-        }
-        return "No response from GPT.";
     }
 }
