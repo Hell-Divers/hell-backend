@@ -9,6 +9,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
 import java.util.Map;
@@ -18,13 +20,15 @@ import java.util.Map;
 public class OpenAIClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${openai.api.key}")
     private String apiKey;
 
     public String getChatResponse(List<Map<String, String>> messages) {
-        // API 키 로깅 (디버깅용, 실제 운영에서는 제거)
-        System.out.println("Using API Key: " + (apiKey != null ? "Key exists" : "Key is null"));
+        System.out.println("=== OpenAIClient.getChatResponse ===");
+        System.out.println("API Key exists: " + (apiKey != null));
+        System.out.println("Messages count: " + messages.size());
         
         String url = "https://api.openai.com/v1/chat/completions";
 
@@ -40,16 +44,20 @@ public class OpenAIClient {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
+            System.out.println("Request body: " + objectMapper.writeValueAsString(requestBody));
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 url, 
                 HttpMethod.POST,
                 request, 
                 new ParameterizedTypeReference<Map<String, Object>>() {}
             );
+            System.out.println("Response status: " + response.getStatusCode());
             Map<String, Object> responseBody = response.getBody();
             // GPT 응답을 로그로 출력
             System.out.println("GPT Response Body: " + responseBody);
             return parseResponse(responseBody);
+        } catch (JsonProcessingException e) {
+            throw new OpenAIClientException("Failed to process JSON", e);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                 // 할당량 초과 예외 처리
@@ -59,8 +67,11 @@ public class OpenAIClient {
                 throw new OpenAIClientException("Error occurred while calling OpenAI API.", e);
             }
         } catch (Exception e) {
-            // 기타 예외 처리
-            throw new OpenAIClientException("Unexpected error occurred while calling OpenAI API.", e);
+            System.err.println("=== Error in OpenAIClient ===");
+            System.err.println("Error type: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 

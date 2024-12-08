@@ -26,21 +26,38 @@ public class BalanceService {
 
     @Transactional
     public void updateBalance(Long userId, BigDecimal amount, String type) {
-        Balance balance = balanceRepository.findByUserId(userId)
-                .orElseGet(() -> createInitialBalance(userId));
+        System.out.println("=== BalanceService.updateBalance ===");
+        System.out.println("UserId: " + userId);
+        System.out.println("Amount: " + amount);
+        System.out.println("Type: " + type);
+        
+        try {
+            Balance balance = balanceRepository.findByUserId(userId)
+                    .orElseGet(() -> createInitialBalance(userId));
+            System.out.println("Current balance: " + balance.getCurrentBalance());
 
-        BigDecimal newBalance;
-        if ("expense".equals(type)) {
-            newBalance = balance.getCurrentBalance().subtract(amount);
-        } else if ("income".equals(type)) {
-            newBalance = balance.getCurrentBalance().add(amount);
-        } else {
-            throw new IllegalArgumentException("Invalid transaction type: " + type);
+            BigDecimal newBalance;
+            if ("expense".equals(type)) {
+                newBalance = balance.getCurrentBalance().subtract(amount);
+            } else if ("income".equals(type)) {
+                newBalance = balance.getCurrentBalance().add(amount);
+            } else {
+                throw new IllegalArgumentException("Invalid transaction type: " + type);
+            }
+            
+            System.out.println("New balance: " + newBalance);
+            balance.setCurrentBalance(newBalance);
+            balance.setLastUpdated(LocalDateTime.now());
+            balanceRepository.save(balance);
+            System.out.println("Balance updated successfully");
+            
+        } catch (Exception e) {
+            System.err.println("=== Error in BalanceService ===");
+            System.err.println("Error type: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        balance.setCurrentBalance(newBalance);
-        balance.setLastUpdated(LocalDateTime.now());
-        balanceRepository.save(balance);
     }
 
     private Balance createInitialBalance(Long userId) {
