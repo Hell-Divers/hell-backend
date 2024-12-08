@@ -2,18 +2,21 @@ package com.hell.backend.gpt.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class GptResponse {
-    private String message;    // GPT의 응답 메시지
-    private String state;      // "accept" 또는 "request"
-    private List<ExpenseData> expenses;  // 지출 데이터 (있는 경우)
+    private String message;
+    private String state;
+    private List<ExpenseData> expenses;
 
     @Getter
     @Setter
+    @ToString
     public static class ExpenseData {
         private double amount;
         private String datetime;
